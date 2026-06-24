@@ -1,0 +1,21 @@
+# Manifesto de perfis por projeto — decisão de onde mora o dado e se há backup.
+# Copie para `projects.conf` (gitignored) e preencha com OS SEUS projetos.
+# Formato:  projeto:perfil[:caminhos]
+#
+# Perfis:
+#   fora           dado mora em ~/data-real/<proj> (não montado). O agente no sandbox é CEGO
+#                  a ele (proteção estrutural). Debug da base real é feito no host.
+#                  Use para dado sensível / PII de terceiros.
+#   dentro         dado mora em <projetos>/<proj>. O agente VÊ e debuga. Sem backup — dados
+#                  regeneráveis/descartáveis (ex.: PDFs de exemplo, outputs derivados).
+#   dentro+backup  dado mora em <projetos>/<proj>, o agente VÊ; + snapshot externo no host
+#                  (backup.sh → ~/sandbox-backups/<proj>) para reverter ação catastrófica.
+#                  Liste os caminhos a salvar (relativos à raiz do projeto, separados por vírgula).
+#
+# Segredos (.env, credentials.json, token.json, .browser_profile) ficam SEMPRE cegos,
+# por deny global em claude-home/settings.json — independente do perfil.
+#
+# Exemplos (apague e ponha os seus):
+# meu-app-pii:fora:
+# meu-app-exemplos:dentro:
+# meu-app-prod:dentro+backup:app.db,uploads/

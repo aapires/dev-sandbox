@@ -1,0 +1,10 @@
+# Este repo versiona só a infra genérica. Nada de config-de-máquina, dado ou segredo.
+*.log
+.DS_Store
+.clip/
+
+# Config DESTA MÁQUINA (gerada/local) — nunca versionar.
+.env                   # PROJECTS_DIR desta máquina (escrito pelo install.sh)
+compose.override.yml   # gerado por ./sandbox.sh sync (máscaras de .venv por projeto)
+mounts.local.conf      # binds in-place especiais desta máquina (ver .example)
+projects.conf          # perfis de dado dos SEUS projetos (ver .example)

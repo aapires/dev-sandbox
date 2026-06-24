@@ -1,0 +1,18 @@
+# mounts.local.conf — binds in-place ESPECIAIS desta máquina (opcional).
+#
+# Copie para `mounts.local.conf` (gitignored) e ajuste. O `./sandbox.sh sync` injeta
+# estas linhas, VERBATIM, na lista de volumes do compose.override.yml.
+#
+# Quando usar: projeto cujo tooling assume `./.venv` ou `./node_modules` DENTRO do repo
+# (monorepos, etc.) e precisa de um diretório GRAVÁVEL ali (volume anônimo ficaria
+# root-owned e o cap_drop=ALL impede chown). A solução é um bind para um dir host-only
+# dev-gravável FORA do repo, que mascara o do host (binários macOS) sem clobber.
+#
+# Para o caso comum (só esconder o .venv macOS do host e usar ~/.venvs/<proj>), NÃO
+# precisa de nada aqui: o `sync` gera a máscara anônima automaticamente para todo
+# projeto que tenha um diretório `.venv`.
+#
+# Formato: uma linha de volume Compose por entrada (src:dst[:opts]).
+# Exemplo real (monorepo anonimizador):
+# ${HOME}/.sandbox-venv/anonimizador:/workspace/anonimizador/.venv
+# ${HOME}/.sandbox-node/anonimizador-reviewer-ui:/workspace/anonimizador/apps/reviewer-ui/node_modules

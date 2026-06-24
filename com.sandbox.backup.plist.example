@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Agendador (macOS/launchd) do backup dos projetos "dentro+backup" (ver backup.sh /
+     projects.conf). Roda NO HOST, diariamente às 13:00.
+
+     Copie para com.sandbox.backup.plist, troque __INSTALL_DIR__ pelo caminho ABSOLUTO
+     deste repo e __HOME__ pela sua home (launchd NÃO expande ~), e instale:
+       cp com.sandbox.backup.plist ~/Library/LaunchAgents/
+       launchctl load ~/Library/LaunchAgents/com.sandbox.backup.plist
+     Conferir / forçar / remover:
+       launchctl list | grep com.sandbox.backup
+       launchctl start com.sandbox.backup
+       launchctl unload ~/Library/LaunchAgents/com.sandbox.backup.plist -->
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.sandbox.backup</string>
+
+    <key>ProgramArguments</key>
+    <array>
+        <string>/bin/bash</string>
+        <string>__INSTALL_DIR__/backup.sh</string>
+    </array>
+
+    <key>StartCalendarInterval</key>
+    <dict>
+        <key>Hour</key>
+        <integer>13</integer>
+        <key>Minute</key>
+        <integer>0</integer>
+    </dict>
+
+    <key>RunAtLoad</key>
+    <false/>
+
+    <key>StandardOutPath</key>
+    <string>__HOME__/sandbox-backups/backup.log</string>
+    <key>StandardErrorPath</key>
+    <string>__HOME__/sandbox-backups/backup.log</string>
+</dict>
+</plist>

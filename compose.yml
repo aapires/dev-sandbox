@@ -1,0 +1,91 @@
+# Sandbox central — um container long-lived, único lugar onde os agentes rodam.
+# Use o ./install.sh (recomendado) ou: SANDBOX_UID=$(id -u) docker compose up -d
+# Entra com: ./sandbox.sh   (ou docker exec -it sandbox claude)
+name: sandbox   # fixa o nome do projeto (e o prefixo dos volumes)
+
+services:
+  sandbox:
+    # Imagem do appliance. Default: pull do GHCR (máquina nova não precisa buildar).
+    # Para buildar local em vez de baixar: SANDBOX_IMAGE não importa, use `--build`.
+    image: ${SANDBOX_IMAGE:-ghcr.io/aapires/dev-sandbox:latest}
+    build:
+      context: .
+      args:
+        UID: ${SANDBOX_UID:-1000}
+    container_name: sandbox
+    hostname: sandbox
+    working_dir: /workspace
+    init: true
+    tty: true
+    stdin_open: true
+
+    # UID-AGNÓSTICO: roda como o usuário do host (grupo 0). A MESMA imagem baixada serve
+    # qualquer máquina — ownership do bind-mount casa e o HOME (dev:0, g+w) é gravável.
+    user: "${SANDBOX_UID:-1000}:0"
+
+    environment:
+      # Login persistente: TODO o estado do Claude (credenciais + .claude.json de
+      # conta/onboarding) vive no volume claude-config → sobrevive a recreate/rebuild.
+      CLAUDE_CONFIG_DIR: /home/dev/.claude
+      # Locale UTF-8 (Debian slim sobe sem locale → paste com acento PT-BR vem mastigado).
+      LANG: C.UTF-8
+      LC_ALL: C.UTF-8
+      # Fallback de terminal; o sandbox.sh repassa o TERM real do host por -e.
+      TERM: xterm-256color
+      # Esta rede entrega AAAA (IPv6) p/ api.anthropic.com mas NÃO tem rota IPv6. Prioriza
+      # IPv4 (reforço; o kill real é o disable_ipv6 em sysctls). Evita "529/API error".
+      NODE_OPTIONS: "--dns-result-order=ipv4first"
+      # Identidade git para `commit` dentro do sandbox (NÃO é segredo). Push continua
+      # impossível aqui (sem credential.helper/token) — é o gate humano no host.
+      GIT_USER_NAME: ${GIT_USER_NAME:-}
+      GIT_USER_EMAIL: ${GIT_USER_EMAIL:-}
+
+    # --- Muralha do host ---------------------------------------------------
+    cap_drop: [ALL]
+    security_opt:
+      - "no-new-privileges:true"
+    # SEM /var/run/docker.sock, SEM privileged. Egress (internet) liberado.
+
+    # Desliga IPv6 no namespace de rede: sem interface v6, o getaddrinfo não retorna AAAA
+    # e o Node nunca tenta a rota IPv6 quebrada (causa raiz dos "529 Overloaded"). Aplicado
+    # pelo runtime na criação → funciona apesar de cap_drop: ALL.
+    sysctls:
+      - net.ipv6.conf.all.disable_ipv6=1
+      - net.ipv6.conf.default.disable_ipv6=1
+
+    # host.docker.internal alcança o Ollama do host (LLM de pipeline local).
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+    # Preview de dev server rodando DENTRO do sandbox. Offset de +10000 no lado do host
+    # para NÃO colidir com a produção do host (3000=node, 8000=Python já ocupados). Dentro
+    # do sandbox use a porta natural (ex.: uvicorn --port 8000); no browser do host acesse
+    # localhost:1xxxx. NÃO publique 3000/8000 diretos — clobraria os apps de produção.
+    ports:
+      - "13000:3000"   # Next.js dev  -> host :13000
+      - "15173:5173"   # Vite dev     -> host :15173
+      - "18000:8000"   # uvicorn/FastAPI dev -> host :18000
+      - "18080:8080"   # extra/genérica -> host :18080
+
+    volumes:
+      # CÓDIGO: ~/Projects inteiro entra read-write. NENHUM dir de dado é montado.
+      - ${PROJECTS_DIR:-..}:/workspace:rw
+
+      # Login do Claude (assinatura) e do Codex persistem aqui entre rebuilds. Os guardrails
+      # são reaplicados sobre o ~/.claude a cada boot pelo entrypoint (sempre frescos).
+      - claude-config:/home/dev/.claude
+      - codex-config:/home/dev/.codex
+
+      # Venvs Linux ficam aqui (gravável pelo dev, fora do bind-mount de código,
+      # persiste entre restarts; ./sandbox.sh reset apaga). Crie cada um com:
+      #   python -m venv ~/.venvs/<projeto> && . ~/.venvs/<projeto>/bin/activate
+      - sandbox-venvs:/home/dev/.venvs
+
+    # Máscaras de .venv por projeto e binds in-place são CONFIG DE MÁQUINA (não do
+    # appliance): ficam em compose.override.yml, gerado por ./sandbox.sh sync a partir
+    # do que existe em ~/Projects. O core acima é genérico e distribuível.
+
+volumes:
+  claude-config:   # login do Claude (assinatura); sobrevive a rebuilds
+  codex-config:    # login/config do Codex; sobrevive a rebuilds
+  sandbox-venvs:   # venvs Linux, dev-graváveis; ./sandbox.sh reset os apaga

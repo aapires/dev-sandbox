@@ -1,0 +1,14 @@
+{
+  "_comment": "Deny SÓ de segredos. Dados de negócio (PDFs, DBs, outputs) são visíveis de propósito — o Claude precisa vê-los para debugar. A confidencialidade de dados sensíveis é estrutural: o que não pode ser visto mora FORA do mount (~/data-real), não aqui. Ver projects.conf.",
+  "permissions": {
+    "deny": [
+      "Read(**/.env)",
+      "Read(**/credentials.json)",
+      "Read(**/token.json)",
+      "Read(**/.browser_profile/**)",
+      "Bash(cat **/.env)",
+      "Bash(cat **/credentials.json)",
+      "Bash(cat **/token.json)"
+    ]
+  }
+}
