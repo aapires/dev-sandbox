@@ -8,6 +8,8 @@ ambiente pronto.
 A imagem é **project-agnostic**: não contém código nem dado nenhum. O seu código entra por
 *bind-mount* em runtime; nada seu vai para a imagem ou para o registry.
 
+> 🚀 **Primeira vez?** Comece pelo **[ONBOARDING.md](ONBOARDING.md)** (10 minutos).
+
 ## O que vem dentro
 
 - **Agentes:** Claude Code + Codex CLI (auto-update; login feito por máquina)
