@@ -15,6 +15,7 @@ A imagem é **project-agnostic**: não contém código nem dado nenhum. O seu c�
 - **Agentes:** Claude Code + Codex CLI (auto-update; login feito por máquina)
 - **Linguagens:** Python 3.14, Node 22, pnpm
 - **Utilitários:** ripgrep, fd, jq, gh (GitHub CLI), uv, git, build-essential
+- **Barra de status:** mostra modelo · diretório · uso da janela de contexto (absoluto + %)
 - **Imagem multi-arch:** `linux/amd64` e `linux/arm64` (Intel e Apple Silicon)
 
 ## A muralha (por que é seguro)

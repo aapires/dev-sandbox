@@ -1,5 +1,10 @@
 {
   "_comment": "Deny SÓ de segredos. Dados de negócio (PDFs, DBs, outputs) são visíveis de propósito — o Claude precisa vê-los para debugar. A confidencialidade de dados sensíveis é estrutural: o que não pode ser visto mora FORA do mount (~/data-real), não aqui. Ver projects.conf.",
+  "statusLine": {
+    "_comment": "Barra de status: modelo · diretório · uso da janela de contexto (absoluto + %). Script original em hooks/statusline.js, depositado em ~/.claude/hooks pelo entrypoint. Caminhos do CONTAINER.",
+    "type": "command",
+    "command": "\"/usr/bin/node\" \"/home/dev/.claude/hooks/statusline.js\""
+  },
   "permissions": {
     "deny": [
       "Read(**/.env)",

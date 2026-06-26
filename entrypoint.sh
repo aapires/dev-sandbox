@@ -16,6 +16,13 @@ mkdir -p "$HOME/.claude" "$HOME/.codex"
 cp -f /opt/claude-guardrails/CLAUDE.md     "$HOME/.claude/CLAUDE.md"     2>/dev/null || true
 cp -f /opt/claude-guardrails/settings.json "$HOME/.claude/settings.json" 2>/dev/null || true
 
+# Hooks (ex.: statusline com o uso da janela de contexto). Frescos da imagem a cada boot,
+# sobre o ~/.claude persistido. Referenciados pelo settings.json acima.
+if [ -d /opt/claude-guardrails/hooks ]; then
+  mkdir -p "$HOME/.claude/hooks"
+  cp -f /opt/claude-guardrails/hooks/* "$HOME/.claude/hooks/" 2>/dev/null || true
+fi
+
 # Identidade git para `commit` no sandbox (vinda do compose; NÃO é segredo). Sem
 # credential.helper/token aqui, `push` segue impossível — o push é o gate humano no host.
 [ -n "${GIT_USER_NAME:-}" ]  && git config --global user.name  "$GIT_USER_NAME"  || true
